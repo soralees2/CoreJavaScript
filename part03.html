@@ -52,6 +52,7 @@
 	</script>
 	<br>
 	<h1>3) call/apply 메서드 활용</h1>
+	<h3>유사배열객체에 배열 메서드를 적용</h3>
 	<p><b>1. 유사배열객체(array-like object)에 배열 메서드 적용</b></p>
 	<script>
 		// exam3-17
@@ -80,20 +81,107 @@
 	<p id="exam3-18"></p>
 	<script>
 		// exam3-18
+		console.log('=== exam3-2) ===')
 		function a(){
 			var argv = Array.prototype.slice.call(arguments);
 			argv.forEach(function(arg){
 				console.log(arg);
 			});
 		}
-		a(1,2,3);
+		a(1,2,3); 
+		/* 전달받은 argument 배열로 반환
+		1
+		2
+		3
+		*/
 
-		document.getElementById('exam3-18').innerHTML = '<div>a</div><div>b</div><div>c</div>';
-		var nodeList = document.querySelectorAll('div');
+		document.getElementById('exam3-18').innerHTML = '<span>a</span><span>b</span><span>c</span>';
+		var nodeList = document.querySelectorAll('span');
 		var nodeArr = Array.prototype.slice.call(nodeList);
 		nodeArr.forEach(function(node){
 			console.log(node);
 		})
+		/* 전달받은 argument 배열로 반환
+			<span>a</span>
+			<span>b</span>
+			<span>c</span>
+		*/
+	</script>
+	<p><b>3. 문자열에 배열 메서드 적용</b></p>
+	<script>
+		// exam3-18
+		console.log('=== exam3-19) ===');
+		var str = 'abc def';
+
+		//Array.prototype.push.call(str, ', pushed string');  // Error : Cannot assign to read only property 'length' of object '[object String]'
+		/*
+			문자열의 경우 length프로퍼티가 읽기 전용이기 때문에 원본 문자열에 변경을 가하는
+			push, pop, shift, unshift, splice등 에는 에러를 던지며 
+			concat처럼 대상이 반드시 배열이어야하는 경우에는 에러는 나진 않지만 결과를 얻을수 없음.
+		*/
+
+		var concat = Array.prototype.concat.call(str, 'string')
+		console.log(concat); // [String {'abc def'}, 'string']
+
+		var every = Array.prototype.every.call(str, function(char){
+			return char !== ' ';
+		});
+		console.log(every); // false
+
+		var some = Array.prototype.some.call(str, function(char){
+			return char === '';
+		})
+		console.log(some); // true
+
+		var newArr = Array.prototype.map.call(str, function(char){
+			return char + '!';
+		});
+		console.log(newArr);
+		// ['a!', 'b!', 'c!', ' !', 'd!', 'e!', 'f!']
+
+		var newStr = Array.prototype.reduce.apply(str, [
+			function(string, char, i){ return string + char + i; },
+			''
+		]);
+		console.log(newStr);
+		// a0b1c2 3d4e5f6
+	</script>
+	<p><b>4. ES6의 Array.from 메서드</b></p>
+	<script>
+		console.log('=== exam3-20) ===');
+		var obj = {
+			0: 'a',
+			1: 'b',
+			2: 'c',
+			length: 3
+		};
+		var arr = Array.from(obj);
+		console.log(arr);
+		/*
+			ES6에서는 유사배열객체 또는 순회 가능한 모든 종류의 데이터 타입을 배열로 전환하는 Array.from 메서드 도입
+		*/
+	</script>
+	<h3>생성자 내부에서 다른 생성자 호출</h3>
+	<p>생성자 내부에 다른 생성자와 공통된 내용이 있을 경우 call 또는 apply를 이용하여 다른 생성자 호출이 가능함.</p>
+	<script>
+		console.log('=== exam3-21) ===');
+		function Person(name, gender){
+			this.name = name;
+			this.gender = gender;
+		}
+
+		function Student(name, gender, school){
+			Person.call(this, name, gender);
+			this.school = school;
+		}
+
+		function Employee(name, gender, company){
+			Person.apply(this, [name, gender]);
+			this.company = company;
+		}
+
+		var by = new Student('보영', 'female', '단국대');
+		var jn = new Employee('재난', 'male', '구골');
 	</script>
 </body>
 </html>
