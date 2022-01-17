@@ -27,7 +27,7 @@
 			}
 		};
 		obj.method(2,3); // 객체참조 -> 결과값 : 1 2 3 
-		obj.method.call({a:4}, 5, 6); // 임의객체 참초 -> 결과값 : 4 5 6
+		obj.method.call({a:4}, 5, 6); // 임의객체 참조 -> 결과값 : 4 5 6
 	</script>
 	<br>
 	<h1>2. apply 메서드</h1>
@@ -224,8 +224,122 @@
 		*/
 	</script>
 	<h1>4. bind 메서드</h1>
+	<h3>1. this 지정과 부분 적용 함수 구현</h3>
 	<p>es5에서 추가된 기능으로 call과 비슷하지만 즉시 호출하지는 않고 <br>
 	넘겨받은 this 및 인수들을 바탕으로 새로운 함수를 반환하기만 하는 메서드.</p>
-	
+	<script>
+		console.log('=== exam3-25) ===');
+		var func = function(a,b,c,d){
+			console.log(this,a,b,c,d);
+		}
+		func(1,2,3,4);
+
+		var bindFunc1 = func.bind({x:1});
+		bindFunc1(5,6,7,8)
+
+		var bindFunc2 = func.bind({x:1}, 4, 5);
+		bindFunc2(6,7);
+		bindFunc2(8,9);
+	</script>
+	<h3>2. name 프로퍼티</h3>
+	<p>bind메서드를 적용하여 새로 만든 함수는 name프로퍼티에 동사 bind의 수동태인 <br>
+		bound라는 접두어가 붙는다. 따라서 call이나 apply보다 코드 추적에 수월하다.</p>
+	<script>
+		console.log('=== exam3-26) ===');
+		var func2 = function(a,b,c,d){
+			console.log(this,a,b,c,d);
+		}
+		var bindFunc3 = func.bind({x:1}, 4, 5);
+		console.log(func.name);
+		console.log(bindFunc3.name);
+	</script>
+	<h3>3. 상위 컨텍스트의 this를 내부함수나 콜백함수에 전달하기</h3>
+	<p>call, apply, bind 메서드를 이용하면 메서드 내부함수에서<br>
+		메서드의 this를 그대로 바라보게 할 수 있다.</p>
+	<script>
+		console.log('=== exam3-27) ===');
+		var obj = {
+			outer : function(){
+				console.log(this);
+				var innerFunc = function(){
+					console.log(this);
+				};
+				innerFunc.call(this);
+			}
+		};
+		obj.outer();
+
+		var obj2 = {
+			outer : function(){
+				var innerFunc = function(){
+					console.log(this);
+				}.bind(this);
+				innerFunc();
+			}
+		};
+		obj2.outer();
+
+		console.log('=== exam3-28) ===');
+		var obj3 = {
+			logThis: function(){
+				console.log(this);
+			},
+			logThisLater1: function(){
+				setTimeout(this.logThis, 500);
+			},
+			logThisLater2: function(){
+				setTimeout(this.logThis.bind(this), 1000);
+			}
+		};
+		// obj3.logThisLater1();
+		// obj3.logThisLater2();
+		
+		/*
+			콜백함수를 인자로 받는 함수나 메서드 중에서 기본적으로 콜백함수 내에서의 this에
+			관여하는 함수 또는 메서드에 대해서도 bind메서드를 이용하면 this값을 사용자의 입맛에 맞게 바꿀 수 있음. 
+			*/
+	</script>
+	<h1>5. 화살표 함수의 예외사항</h1>
+	<p>ES6에 새로 도입된 화살표 함수는 실행 컨텍스트 생성 시 this를 바인딩하는 과정이 제외됐다<br/>
+	 이 함수 내부에는 this가 아예 없으며 접근하고자 하면 스코프체인상 가장 가까운 this에 접근한다.</p>
+	<script>
+		console.log('=== exam3-29) ===');
+		var obj = {
+			outer : function(){
+				console.log(this);
+				var innerFunc = () => {
+					console.log(this);
+				};
+				innerFunc();
+			}
+		};
+		obj.outer();
+	</script>
+	<h1>6. 별도의 인자로 this를 받는 경우(콜백함수 내에서의 this)</h1>
+	<p></p>
+	<script>
+		console.log('=== exam3-30) ===');
+		var report ={
+			sum: 0,
+			count: 0,
+			add: function(){
+				var args = Array.prototype.slice.call(arguments);
+				args.forEach(function(entry){
+					this.sum += entry;
+					++this.count;
+				}, this);
+			},
+			average: function (){
+				return this.sum / this.count;
+			}
+		};
+		report.add(60,85,95);
+		console.log(report.sum, report.count, report.average());
+
+		/*
+			thisArgs를 인자로 받는 메서드
+			forEach, map, filter, some, every, find, findIndex, flatMap, from
+		*/
+	</script>
 </body>
 </html>
